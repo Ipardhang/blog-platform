@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inkwell</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<p id="msg" class="msg" hidden></p>
+<header class="top">
+  <div class="tl"><div class="logo" onclick="goHome()">I</div>
+    <label class="search"><span id="searchIc"></span><input id="search" placeholder="Search Inkwell" oninput="run(() => loadPosts(1))"></label></div>
+  <nav class="tabs" id="tabs"></nav>
+  <div class="tr"><button class="rbtn" id="addBtn" onclick="newPost()" title="Create"></button><button class="rbtn" id="themeBtn" onclick="toggleTheme()" title="Dark mode"></button><div id="me" class="av me" onclick="avatarClick()" title="Account"></div></div>
+</header>
+
+<div class="shell">
+  <aside class="left" id="left"></aside>
+
+  <main>
+    <section id="list">
+      <div id="composer"></div>
+      <div id="stories"></div>
+      <div id="authorHead"></div>
+      <div id="posts"></div>
+      <div id="pager" class="pager"></div>
+    </section>
+
+    <section id="post" hidden>
+      <a class="back" onclick="run(() => loadPosts(page))" id="backLink"></a>
+      <article id="article" class="card"></article>
+      <div class="card">
+        <div id="cHead" class="chead"></div>
+        <div id="comments"></div>
+        <div id="commentForm"></div>
+      </div>
+    </section>
+
+    <section id="editor" hidden>
+      <div class="card modal">
+        <div class="mh"><h2 id="editorTitle">Create post</h2></div>
+        <div class="mb">
+          <input id="eId" type="hidden">
+          <div id="editorUser" class="ph"></div>
+          <input id="eTitle" class="plain big" placeholder="Title" maxlength="150">
+          <textarea id="eContent" class="plain" rows="8" placeholder="What's on your mind?"></textarea>
+          <button class="btn block" onclick="savePost()">Post</button>
+          <button class="btn grey block" onclick="run(() => loadPosts(page))">Cancel</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="auth" hidden>
+      <div class="authwrap">
+        <div class="authtxt"><div class="bigname">inkwell</div><p>Inkwell helps you share stories and connect with the writers around you.</p></div>
+        <div class="card authbox">
+          <h3 id="authTitle" class="center">Log in to Inkwell</h3>
+          <input id="aName" placeholder="Full name" hidden>
+          <input id="aEmail" type="email" placeholder="Email address">
+          <input id="aPass" type="password" placeholder="Password (6+ characters)">
+          <button id="authBtn" class="btn block lg" onclick="submitAuth()">Log in</button>
+          <hr class="hr">
+          <div class="center"><button id="authSwitch" class="btn green lg" onclick="toggleAuth()">Create new account</button></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <aside class="right" id="right"></aside>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
