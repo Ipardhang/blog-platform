@@ -21,7 +21,7 @@ const ICON = {
 };
 const ico = (n, s = 24) => `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="currentColor"><path d="${ICON[n]}"/></svg>`;
 const av = (name, cls = '') => `<span class="av ${cls}" style="background:hsl(${hue(name || '?')},45%,48%)">${esc(String(name || '?').charAt(0).toUpperCase())}</span>`;
-let token = localStorage.getItem('token');
+let token = null;
 let user = JSON.parse(localStorage.getItem('user') || 'null');
 let page = 1, mode = 'all', authorId = null, view = 'list', current = null, registering = false;
 let feed = {}, names = {}, writers = [];
@@ -29,12 +29,15 @@ let feed = {}, names = {}, writers = [];
 function setTheme(t) { document.documentElement.dataset.theme = t; localStorage.setItem('theme', t); $('#themeBtn').innerHTML = ico(t === 'dark' ? 'sun' : 'moon', 20); }
 const toggleTheme = () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
 $('#searchIc').innerHTML = ico('search', 18); $('#addBtn').innerHTML = ico('add', 22);
+let searchTimer;
+$('#search').addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => run(() => loadPosts(1)), 300); });
 setTheme(localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
 
 async function api(url, method = 'GET', body) {
   const r = await fetch('/api' + url, {
     method,
-    headers: { 'Content-Type': 'application/json', ...(token && { Authorization: 'Bearer ' + token }) },
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
     body: body && JSON.stringify(body),
   });
   const d = await r.json().catch(() => ({}));
@@ -73,7 +76,7 @@ function renderChrome() {
     ? `<h4>Contacts</h4>` + writers.map(([id]) => `<a class="ct" onclick="viewAuthor('${id}')">${av(names[id])}<i class="dot"></i>${esc(names[id])}</a>`).join('') : '';
 }
 const avatarClick = () => (user ? myPosts() : openAuth());
-const goHome = () => { mode = 'all'; authorId = null; $('#search').value = ''; run(() => loadPosts(1)); };
+const goHome = () => { mode = 'all'; authorId = null; $('#search').value = ''; clearTimeout(searchTimer); run(() => loadPosts(1)); };
 function myPosts() {
   if (!user) return openAuth('Please log in to see your posts');
   mode = 'mine'; run(() => loadPosts(1));
@@ -119,7 +122,8 @@ async function loadPosts(p = 1) {
 
 /* ---------- single post ---------- */
 async function openPost(id) {
-  const [post, comments] = await Promise.all([api('/posts/' + id), api(`/posts/${id}/comments`)]);
+  const [post, commentPage] = await Promise.all([api('/posts/' + id), api(`/posts/${id}/comments?page=1`)]);
+  const comments = commentPage.comments;
   if (post.author) names[post.author._id] = post.author.name;
   post.commentCount = comments.length; current = post;
   show('post');
@@ -141,7 +145,7 @@ function renderComments(list) {
     <div class="cm">${av(c.author?.name, 'sm')}<div><div class="bubble"><b>${esc(c.author?.name || 'Unknown')}</b><span>${esc(c.text)}</span></div>
       <div class="cmeta"><span>${fmt(c.createdAt)}</span>${user && (user.role === 'admin' || user.id === c.author?._id || user.id === current.author?._id) ? `<a onclick="deleteComment('${c._id}')">Delete</a>` : ''}</div></div></div>`).join('') || '<div class="meta">No comments yet. Be the first to comment.</div>';
 }
-const reloadComments = async () => renderComments(await api(`/posts/${current._id}/comments`));
+const reloadComments = async () => renderComments((await api(`/posts/${current._id}/comments?page=1`)).comments);
 const addComment = () => run(async () => {
   await api(`/posts/${current._id}/comments`, 'POST', { text: $('#cText').value });
   $('#cText').value = ''; await reloadComments();
@@ -192,11 +196,11 @@ function toggleAuth() {
 }
 const submitAuth = () => run(async () => {
   const d = await api(registering ? '/auth/register' : '/auth/login', 'POST', { name: $('#aName').value, email: $('#aEmail').value, password: $('#aPass').value });
-  token = d.token; user = d.user;
-  localStorage.setItem('token', token); localStorage.setItem('user', JSON.stringify(user));
+  user = d.user;
+  localStorage.setItem('user', JSON.stringify(user));
   mode = 'all'; await loadPosts(1);
 });
-function logout() { token = user = null; localStorage.removeItem('token'); localStorage.removeItem('user'); mode = 'all'; run(() => loadPosts(1)); }
+function logout() { run(async () => { await api('/auth/logout', 'POST'); token = null; user = null; localStorage.removeItem('user'); mode = 'all'; await loadPosts(1); }); }
 
 renderChrome();
 const hash = location.hash.match(/^#post=([0-9a-f]{24})$/);
