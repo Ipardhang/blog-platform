@@ -29,6 +29,8 @@ let feed = {}, names = {}, writers = [];
 function setTheme(t) { document.documentElement.dataset.theme = t; localStorage.setItem('theme', t); $('#themeBtn').innerHTML = ico(t === 'dark' ? 'sun' : 'moon', 20); }
 const toggleTheme = () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
 $('#searchIc').innerHTML = ico('search', 18); $('#addBtn').innerHTML = ico('add', 22);
+let searchTimer;
+$('#search').addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => run(() => loadPosts(1)), 300); });
 setTheme(localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
 
 async function api(url, method = 'GET', body) {
@@ -74,7 +76,7 @@ function renderChrome() {
     ? `<h4>Contacts</h4>` + writers.map(([id]) => `<a class="ct" onclick="viewAuthor('${id}')">${av(names[id])}<i class="dot"></i>${esc(names[id])}</a>`).join('') : '';
 }
 const avatarClick = () => (user ? myPosts() : openAuth());
-const goHome = () => { mode = 'all'; authorId = null; $('#search').value = ''; run(() => loadPosts(1)); };
+const goHome = () => { mode = 'all'; authorId = null; $('#search').value = ''; clearTimeout(searchTimer); run(() => loadPosts(1)); };
 function myPosts() {
   if (!user) return openAuth('Please log in to see your posts');
   mode = 'mine'; run(() => loadPosts(1));
