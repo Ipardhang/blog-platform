@@ -41,6 +41,7 @@ exports.optionalAuth = (req, res, next) => {
 
 exports.rateLimit = ({ windowMs = 60000, max = 60, message = 'Too many requests.' } = {}) => {
   const buckets = new Map();
+  // In-memory limiting is intentionally local; use a shared store (e.g. Redis) when horizontally scaling.
   setInterval(() => {
     const now = Date.now();
     for (const [key, value] of buckets) if (value.reset <= now) buckets.delete(key);
