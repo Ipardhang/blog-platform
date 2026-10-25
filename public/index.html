@@ -2,16 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Inkwell</title>
+<title>Inkwell — Stories worth reading</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <p id="msg" class="msg" hidden></p>
 <header class="top">
-  <div class="tl"><div class="logo" onclick="goHome()">I</div>
-    <label class="search"><span id="searchIc"></span><input id="search" placeholder="Search Inkwell" oninput="run(() => loadPosts(1))"></label></div>
+  <div class="tl"><div class="logo" onclick="goHome()" aria-label="Inkwell home">I</div>
+    <label class="search"><span id="searchIc"></span><input id="search" aria-label="Search Inkwell" autocomplete="off" placeholder="Search stories, writers..." oninput="run(() => loadPosts(1))"></label></div>
   <nav class="tabs" id="tabs"></nav>
-  <div class="tr"><button class="rbtn" id="addBtn" onclick="newPost()" title="Create"></button><button class="rbtn" id="themeBtn" onclick="toggleTheme()" title="Dark mode"></button><div id="me" class="av me" onclick="avatarClick()" title="Account"></div></div>
+  <div class="tr"><button class="rbtn" id="addBtn" onclick="newPost()" title="Create post" aria-label="Create post"></button><button class="rbtn" id="themeBtn" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle theme"></button><div id="me" class="av me" onclick="avatarClick()" title="Account"></div></div>
 </header>
 
 <div class="shell">
